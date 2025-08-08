@@ -1,37 +1,26 @@
 package db
 
 import (
-	"fmt"
-	"log/slog"
-	"os"
-	"strconv"
-
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
+
+	"github.com/niemet0502/zapp/pkg/models"
 )
 
 var Connection *gorm.DB
 
-func InitDb() error {
+func InitDb() (*gorm.DB, error) {
 
-	port := os.Getenv("POSTGRES_PORT")
-	dbname := os.Getenv("POSTGRES_DB")
-	password := os.Getenv("POSTGRES_PASSWORD")
-	user := os.Getenv("POSTGRES_USER")
-	host := os.Getenv("POSTGRES_HOST")
+	dsn := "host=localhost user=user password=password dbname=mydatabase port=5432 sslmode=disable"
+	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 
-	p, _ := strconv.Atoi(port)
-
-	psqlInfo := fmt.Sprintf("host=%s user=%s  "+
-		"password=%s dbname=%s port=%d sslmode=disable",
-		host, user, password, dbname, int(p))
-
-	db, err := gorm.Open(postgres.Open(psqlInfo), &gorm.Config{})
 	if err != nil {
-		slog.Error(err.Error())
+		panic(err.Error())
 	}
+
+	db.AutoMigrate(&models.User{})
 
 	Connection = db
 
-	return nil
+	return db, nil
 }

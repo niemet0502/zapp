@@ -5,8 +5,10 @@ import (
 	"net/http"
 
 	"github.com/joho/godotenv"
+	"github.com/niemet0502/zapp/services/user-service/controllers"
 	"github.com/niemet0502/zapp/services/user-service/db"
 	"github.com/niemet0502/zapp/services/user-service/routes"
+	"github.com/niemet0502/zapp/services/user-service/services"
 )
 
 func main() {
@@ -15,9 +17,15 @@ func main() {
 	if err != nil {
 		slog.Info("Failed to fetch the env variable")
 	}
-	db.InitDb()
+	db, _ := db.InitDb()
 
 	r := routes.ApiServer()
+
+	userSvc := services.CreateUserService(db)
+
+	userCtrl := controllers.CreateUserController(userSvc)
+
+	r.Post("/users", userCtrl.CreateUser)
 
 	slog.Info("The service is listening on 3000 port")
 	http.ListenAndServe(":3000", r)
