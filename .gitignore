@@ -1,2 +1,4 @@
 architecture.excalidraw
 **/.env
+**/node_modules/
+**/dist/
