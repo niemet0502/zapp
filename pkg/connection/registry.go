@@ -11,4 +11,7 @@ type UserConnected struct {
 var (
 	Drivers   = make(map[string]UserConnected)
 	DriversMu sync.Mutex
+
+	ActiveRide   = make(map[string]string)
+	ActiveRideMu sync.Mutex
 )

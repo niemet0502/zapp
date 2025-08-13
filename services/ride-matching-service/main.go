@@ -34,11 +34,15 @@ func main() {
 
 	svc := services.CreateRideMatchingService(redisClient, db)
 
+	svc.SubscribeToDriverLocationUpdate()
+
 	h := handlers.CreateRideMatchingHandler(svc)
 
 	r.Patch("/ride/request/{rideId}", h.RideMatching)
 
 	r.Patch("/ride/accept/{rideId}", h.AcceptRide)
+
+	r.Patch("/ride/update/{rideId}", h.RideUpdate)
 
 	r.HandleFunc("/sse", h.RandomMessageSSEHandler)
 

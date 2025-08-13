@@ -25,11 +25,7 @@ func CreateRideMatchingHandler(svc *services.RideMatchingService) *RideMatchingH
 }
 
 func (h *RideMatchingHandler) RideMatching(w http.ResponseWriter, r *http.Request) {
-	// get the rideId
-	slog.Info("ride matching called")
 	rideId := chi.URLParam(r, "rideId")
-
-	print(rideId)
 
 	i, err := strconv.Atoi(rideId)
 	if err != nil {
@@ -57,9 +53,6 @@ func (h *RideMatchingHandler) RandomMessageSSEHandler(w http.ResponseWriter, r *
 		return
 	}
 
-	println(driverID)
-	println(userType)
-	// Get the flusher interface
 	flusher, ok := w.(http.Flusher)
 	if !ok {
 		http.Error(w, "Streaming unsupported", http.StatusInternalServerError)
@@ -84,7 +77,6 @@ func (h *RideMatchingHandler) RandomMessageSSEHandler(w http.ResponseWriter, r *
 		log.Printf("Driver %s disconnected", driverID)
 	}()
 
-	// Send random messages every 2 seconds
 	ticker := time.NewTicker(2 * time.Second)
 	defer ticker.Stop()
 
@@ -121,7 +113,6 @@ func (h *RideMatchingHandler) AcceptRide(w http.ResponseWriter, r *http.Request)
 	v := govalidator.New(opts)
 	validationErrors := v.ValidateJSON()
 
-	// Handle validation errors
 	if len(validationErrors) > 0 {
 		slog.Error("Validation failed", slog.Any("errors", validationErrors))
 		w.Header().Set("Content-Type", "application/json")
@@ -133,6 +124,43 @@ func (h *RideMatchingHandler) AcceptRide(w http.ResponseWriter, r *http.Request)
 	id, _ := strconv.Atoi(rideId)
 
 	result, err := h.svc.AcceptRide(uint(id), request)
+
+	if err != nil {
+		slog.Error(err.Error())
+		return
+	}
+
+	res, _ := json.Marshal(result)
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	w.Write(res)
+}
+
+func (h *RideMatchingHandler) RideUpdate(w http.ResponseWriter, r *http.Request) {
+	var ride services.RideUpdateRequest
+
+	rules := govalidator.MapData{
+		"status":  []string{"required"},
+		"ride_id": []string{"required"},
+	}
+
+	opts := govalidator.Options{
+		Request: r,
+		Data:    &ride,
+		Rules:   rules,
+	}
+
+	v := govalidator.New(opts)
+	validationErrors := v.ValidateJSON()
+
+	if len(validationErrors) > 0 {
+		slog.Error("Validation failed", slog.Any("errors", validationErrors))
+		http.Error(w, "Validation failed", http.StatusBadRequest)
+		return
+	}
+
+	result, err := h.svc.RideUpdate(ride)
 
 	if err != nil {
 		slog.Error(err.Error())

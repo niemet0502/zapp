@@ -23,6 +23,9 @@ func main() {
 	locationService := services.CreateLocationUpdateService(redisClient)
 	locationHandler := controllers.CreateLocationUpdatHandler(locationService)
 
+	locationService.SubscribeToRideChannel()
+	locationService.SubscribeToRideUpdateChannel()
+
 	http.HandleFunc("/ws", locationHandler.WsHandler)
 
 	fmt.Println("Server listening on :3002")
