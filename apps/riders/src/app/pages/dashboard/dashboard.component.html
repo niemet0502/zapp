@@ -1,0 +1,19 @@
+<p>Welcome riders</p>
+
+<div class="search-container">
+    <input
+      type="text"
+      placeholder="Enter destination"
+      [(ngModel)]="searchQuery"
+    />
+    <button (click)="searchAddress()">Search</button>
+  </div>
+  
+  <div id="map" style="height: 500px; width: 100%;"></div>
+  
+  <p *ngIf="lat && lng">
+    Latitude: {{ lat }}, Longitude: {{ lng }}
+  </p>
+  
+  <button *ngIf="marker" (click)="requestRide()">Request Ride</button>
+  
